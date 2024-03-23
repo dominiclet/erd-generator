@@ -7,6 +7,18 @@
   min-height: 100vh;
 }
 
+.paperBody {
+  margin: 0;
+  padding: 0;
+  background-color: #f0f0f0; /* Fallback background color */
+  background-image: radial-gradient(#fff 1px, transparent 1px),
+    radial-gradient(#fff 1px, transparent 1px);
+  background-position:
+    0 0,
+    25px 25px; /* Adjust the spacing between dots */
+  background-size: 50px 50px; /* Adjust the size of the dots */
+}
+
 .description {
   display: inherit;
   justify-content: inherit;
@@ -51,7 +63,9 @@
   border-radius: var(--border-radius);
   background: rgba(var(--card-rgb), 0);
   border: 1px solid rgba(var(--card-border-rgb), 0);
-  transition: background 200ms, border 200ms;
+  transition:
+    background 200ms,
+    border 200ms;
 }
 
 .card span {
