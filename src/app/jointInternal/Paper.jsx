@@ -1,4 +1,4 @@
-import { dia, mvc } from "jointjs";
+import { dia, mvc, elementTools } from "jointjs";
 import React, { useRef, useEffect, useState, useContext } from "react";
 import { createPortal } from "react-dom";
 import { GraphContext } from "./GraphContext";
@@ -110,11 +110,35 @@ export function Paper({
       model: graph,
     });
 
+    // Graph event listener - triggers on additions to Paper
+    graph.on("add", (cell) => {});
+
     // Add a click event listener to the Paper component
     paper.on("cell:pointerclick", (cellView, evt, x, y) => {
       console.log("Shape clicked", cellView.model.attributes.attrs);
       // Add your custom logic here
+
+      if(cellView.model.isElement()){
+        attachElementTool(cellView);
+      }
     });
+
+    paper.on("cell:mouseenter", (cellView, evt, x, y) => {
+      cellView.showTools();
+    });
+
+    paper.on("cell:mouseleave", (cellView, evt, x, y) => {
+      cellView.hideTools();
+    });
+
+    // Function to create element tools and attach them
+    function attachElementTool(elementView){
+      var elementToolsView = new dia.ToolsView({
+        name: 'basic-tools',
+        tools: [new elementTools.Remove()]
+      });
+      elementView.addTools(elementToolsView);
+    }
 
     paper.el.style.boxSizing = "border-box";
     paperWrapperElRef.current.appendChild(paper.el);
