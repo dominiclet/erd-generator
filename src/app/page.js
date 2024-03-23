@@ -7,7 +7,8 @@ import {
   UserAddOutlined,
   CodeSandboxOutlined,
 } from "@ant-design/icons";
-import { Layout, theme, Menu } from "antd";
+import { Layout, theme, Menu, Button } from "antd";
+
 import JointJSCanvas from "./canvas";
 
 const { Header, Sider, Content } = Layout;
@@ -25,11 +26,23 @@ export default function Home() {
         size: { width: 100, height: 50 },
         attrs: {
           label: {
-            text: "Hello World",
+            text: "",
           },
         },
       });
       canvasRef.current.addShape(rect);
+    }
+    if (e.key === "relationshipMenuItem") {
+      const rhombus = new shapes.basic.Path({
+        size: { width: 100, height: 100 },
+        attrs: {
+          path: { d: "M 50 0 L 100 50 L 50 100 L 0 50 Z" },
+          label: {
+            text: "",
+          },
+        },
+      });
+      canvasRef.current.addShape(rhombus);
     }
   };
   return (
@@ -65,7 +78,16 @@ export default function Home() {
             padding: 0,
             background: colorBgContainer,
           }}
-        ></Header>
+        >
+          <Button
+            style={{
+              marginLeft: 16,
+            }}
+            type="primary"
+          >
+            Export to SQL
+          </Button>
+        </Header>
         <Content
           style={{
             margin: "24px 16px",
