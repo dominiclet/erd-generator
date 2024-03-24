@@ -58,7 +58,11 @@ const attributeChildrenHandler = (attributes) => {
 
     const attributeObjHandler = (obj) => {
         let colName = obj["#text"];
-        let type = obj["@_type"];
+        let type = obj["@_type"] || "varchar(32)";
+        let isPrimary = obj["@_primary"]
+        if (isPrimary == "true") {
+            primaryKeys.push(colName);
+        }
         let col = `    ${colName} ${type}`
         cols.push(col);
 
@@ -77,7 +81,10 @@ const attributeChildrenHandler = (attributes) => {
 
     const generate = () => {
         handler(attributes);
-        const colSql = cols.join(",\n")
+        let colSql = cols.join(",\n")
+        if (primaryKeys.length > 0) {
+            colSql += ",\n" + `    PRIMARY KEY (${primaryKeys.join(", ")})`
+        }
         return colSql;
     }
 
