@@ -119,19 +119,20 @@ export function Paper({
       var cell = cellView.model;
       console.log("Shape clicked", cell.attributes.attrs);
       // Add your custom logic here
+
       if(cell.isElement()){
-        customElementTools.attachElementTool(cellView);
-        
-        cell.prop("custom/isActive") == "true" ? cell.prop("custom/isActive", "false") : cell.prop("custom/isActive", "true");
+        // Attaches tools and toggles the isActive property
+        customElementTools.attachElementTool(cellView); 
       }
+      cell.prop("custom/isActive") == "true" ? cell.prop("custom/isActive", "false") : cell.prop("custom/isActive", "true");
     });
 
     paper.on("cell:mouseenter", (cellView, evt, x, y) => {
-      cellView.showTools();
+      // cellView.showTools();
     });
 
     paper.on("cell:mouseleave", (cellView, evt, x, y) => {
-      if(cellView.model.prop("custom/isActive") != "false"){
+      if(cellView.model.prop("custom/isActive") == "false"){
         cellView.hideTools();
       }
     });
