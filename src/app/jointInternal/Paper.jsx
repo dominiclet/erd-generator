@@ -3,6 +3,7 @@ import React, { useRef, useEffect, useState, useContext } from "react";
 import { createPortal } from "react-dom";
 import { GraphContext } from "./GraphContext";
 import { PaperContext } from "./PaperContext";
+import customElementTools from "./tools";
 
 export const PORTAL_READY_EVENT = "portal:ready";
 
@@ -110,10 +111,30 @@ export function Paper({
       model: graph,
     });
 
+    // Graph event listener - triggers on additions to Paper
+    graph.on("add", (cell) => {});
+
     // Add a click event listener to the Paper component
     paper.on("cell:pointerclick", (cellView, evt, x, y) => {
-      console.log("Shape clicked", cellView.model.attributes.attrs);
+      var cell = cellView.model;
+      console.log("Shape clicked", cell.attributes.attrs);
       // Add your custom logic here
+
+      if(cell.isElement()){
+        // Attaches tools and toggles the isActive property
+        customElementTools.attachElementTool(cellView); 
+      }
+      cell.prop("custom/isActive") == "true" ? cell.prop("custom/isActive", "false") : cell.prop("custom/isActive", "true");
+    });
+
+    paper.on("cell:mouseenter", (cellView, evt, x, y) => {
+      // cellView.showTools();
+    });
+
+    paper.on("cell:mouseleave", (cellView, evt, x, y) => {
+      if(cellView.model.prop("custom/isActive") == "false"){
+        cellView.hideTools();
+      }
     });
 
     paper.el.style.boxSizing = "border-box";
