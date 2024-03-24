@@ -4,8 +4,8 @@ const entityTest = '\
     <erd>\
         <entity>\
             Table1\
-            <attribute type="VARCHAR(32)">col1</attribute>\
-            <attribute type="INT">col2</attribute>\
+            <attribute type="varchar(32)">col1</attribute>\
+            <attribute type="integer">col2</attribute>\
         </entity>\
         <entity>\
             Table2\

@@ -1,20 +1,5 @@
 import { XMLParser } from "fast-xml-parser";
 
-export const generate = (xmlStr) => {
-    let parser = new XMLParser({
-        ignoreAttributes: false
-    });
-    let output = parser.parse(xmlStr);
-
-    generateFromObject(output);
-}
-
-export const generateFromObject = (xml) => {
-    let entityLevel = xml["erd"]["entity"];
-    let entityRet = entityChildrenHandler(entityLevel);
-    console.log(entityRet);
-}
-
 // Common handle children function
 // Triage to specific handlers depending on type of object
 // Child/children are represented as either string, object, or array of [string|object]
@@ -31,6 +16,7 @@ const getChildrenHandler = (strHandler, objHandler, arrHandler) => ((children) =
     return undefined;
 })
 
+
 // Entity with only text as children should create an empty table
 const entityStrHandler = (text) => {
     return `CREATE TABLE ${text} ();`
@@ -39,17 +25,18 @@ const entityStrHandler = (text) => {
 const entityObjHandler = (obj) => {
     const tableName = obj["#text"];
     const attributes = obj["attribute"];
-    let attrSql = attributeChildrenHandler(attributes);
+    const { generate } = attributeChildrenHandler(attributes);
+    const attrSql = generate();
 
-    return `CREATE TABLE ${tableName} (${attrSql});`;
+    return `CREATE TABLE ${tableName} (\n${attrSql}\n);`;
 }
 
 const entityArrHandler = (arr) => {
     // Multiple entities
     let retStr = '';
 
-    arr.forEach(elem => {
-        retStr += entityChildrenHandler(elem) + "\n\n";
+    arr.forEach((elem, idx) => {
+        retStr += entityChildrenHandler(elem) + (idx != arr.length - 1 ? "\n\n" : "");
     });
     return retStr;
 }
@@ -57,25 +44,61 @@ const entityArrHandler = (arr) => {
 // Entity generation
 const entityChildrenHandler = getChildrenHandler(entityStrHandler, entityObjHandler, entityArrHandler);
 
-const attributeStrHandler = (text) => {
-    // Let VARCHAR(32) be default if type attribute is not given
-    return `${text} VARCHAR(32)`
+
+const attributeChildrenHandler = (attributes) => {
+    let cols = [];
+    let primaryKeys = [];
+
+    const attributeStrHandler = (text) => {
+        // Let VARCHAR(32) be default if type attribute is not given
+        let col = `    ${text} varchar(32)`;
+        cols.push(col);
+        return col;
+    }
+
+    const attributeObjHandler = (obj) => {
+        let colName = obj["#text"];
+        let type = obj["@_type"];
+        let col = `    ${colName} ${type}`
+        cols.push(col);
+
+        return col;
+    }
+
+    // More than one children attribute
+    const attributeArrHandler = (arr) => {
+        arr.forEach((elem) => {
+            handler(elem);
+        });
+        return;
+    }
+
+    const handler = getChildrenHandler(attributeStrHandler, attributeObjHandler, attributeArrHandler);
+
+    const generate = () => {
+        handler(attributes);
+        const colSql = cols.join(",\n")
+        return colSql;
+    }
+
+    return {
+        generate
+    }
 }
 
-const attributeObjHandler = (obj) => {
-    let colName = obj["#text"];
-    let type = obj["@_type"];
-
-    return `${colName} ${type}`;
-}
-
-const attributeArrHandler = (arr) => {
-    let retStr = '\n';
-
-    arr.forEach((elem, idx) => {
-        retStr += "    " + attributeChildrenHandler(elem) + (idx != arr.length - 1 ? "," : "") + "\n";
+export const generate = (xmlStr) => {
+    let parser = new XMLParser({
+        ignoreAttributes: false
     });
-    return retStr;
+    let output = parser.parse(xmlStr);
+
+    generateFromObject(output);
 }
 
-const attributeChildrenHandler = getChildrenHandler(attributeStrHandler, attributeObjHandler, attributeArrHandler);
+export const generateFromObject = (xml) => {
+    let xmlEntities = xml["erd"]["entity"];
+    let sql = entityChildrenHandler(xmlEntities);
+    console.log(sql);
+    return sql;
+}
+
