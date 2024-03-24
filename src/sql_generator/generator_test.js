@@ -11,6 +11,7 @@ const entityTest = '\
         <entity>\
             Table2\
             <attribute primary="true">col1</attribute>\
+            <attribute mandatory="true">mandatorycol2</attribute>\
         </entity>\
     </erd>';
 
