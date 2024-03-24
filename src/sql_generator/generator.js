@@ -61,12 +61,13 @@ const attributeChildrenHandler = (attributes) => {
         let type = obj["@_type"] || "varchar(32)";
         let isPrimary = obj["@_primary"];
         let isMandatory = obj["@_mandatory"];
+        let isUnique = obj["@_unique"];
 
         if (isPrimary == "true") {
             primaryKeys.push(colName);
         }
 
-        let col = `    ${colName} ${type}${isMandatory === "true" ? " NOT NULL" : ""}`
+        let col = `    ${colName} ${type}${isUnique === "true" ? " UNIQUE" : ""}${isMandatory === "true" ? " NOT NULL" : ""}`
         cols.push(col);
 
         return col;

@@ -12,6 +12,13 @@ const entityTest = '\
             Table2\
             <attribute primary="true">col1</attribute>\
             <attribute mandatory="true">mandatorycol2</attribute>\
+            <attribute unique="true" type="integer">uniquecol3</attribute>\
+        </entity>\
+        <entity>\
+            Table3\
+            <attribute primary="true">t3col1</attribute>\
+            <attribute mandatory="true" primary="true">t3col2</attribute>\
+            <attribute unique="true" type="integer" primary="true">t3col3</attribute>\
         </entity>\
     </erd>';
 
