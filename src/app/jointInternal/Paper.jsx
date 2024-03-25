@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { GraphContext } from "./GraphContext";
 import { PaperContext } from "./PaperContext";
 import customElementTools from "./tools";
+import * as xmlTriggers from "./xmlTriggers";
 
 export const PORTAL_READY_EVENT = "portal:ready";
 
@@ -112,19 +113,38 @@ export function Paper({
     });
 
     // Graph event listener - triggers on additions to Paper
-    graph.on("add", (cell) => {});
+    graph.on("add", (cell) => {
+      // if(cell.model.prop("custom/type") == "entity"){
+      //   console.log("test");
+      // }
+    });
 
+    // Graph even listener - triggers on link connection
+    graph.on("change:source change:target", function(link){
+      if ( link.get('source').id && link.get('target').id ){
+        console.log('Link connected');
+
+        console.log('source: ', link.source);
+        console.log('target: ', link.target);
+      }
+    });
+    
     // Add a click event listener to the Paper component
     paper.on("cell:pointerclick", (cellView, evt, x, y) => {
       var cell = cellView.model;
       console.log("Shape clicked", cell.attributes.attrs);
       // Add your custom logic here
+      
+      console.log(cellView.model.prop("custom/type"));
 
       if(cell.isElement()){
-        // Attaches tools and toggles the isActive property
         customElementTools.attachElementTool(cellView); 
       }
+      if(cell.isLink()){
+        customElementTools.attachLinkTool(cellView); 
+      }
       cell.prop("custom/isActive") == "true" ? cell.prop("custom/isActive", "false") : cell.prop("custom/isActive", "true");
+    
     });
 
     paper.on("cell:mouseenter", (cellView, evt, x, y) => {

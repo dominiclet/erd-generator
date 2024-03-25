@@ -1,7 +1,7 @@
 import {elementTools, linkTools, dia} from 'jointjs';
 
 const customElementTools = {
-    // Function to create element tools and attach them
+    // Function to create and attach element tools
     attachElementTool: function(elementView){
         var elementToolsView = new dia.ToolsView({
           tools: [new elementTools.Remove({
@@ -27,6 +27,36 @@ const customElementTools = {
         });
         elementView.addTools(elementToolsView);
       },
+      // Function to create and attach link tools
+      //
+      // For some reason the buttons are stuck at the top left corner of the graph.
+      // Boundaries seem to stick to the link properly though.
+      attachLinkTool: function(linkView){
+        var linkToolsView = new dia.ToolsView({
+          tools: [new linkTools.Remove({
+                    markup: [{
+                        tagName: 'circle',
+                        selector: 'button',
+                        attributes:{
+                            'r': 10,
+                            'fill':'#ed0028',
+                            'cursor': 'pointer',
+                        }
+                    }],
+                    // x: 200,
+                    // y: 200,
+                    offset: {
+                        x: 40, 
+                        y: -40
+                    },  
+                  }), 
+                  new elementTools.Boundary(),
+                  new InfoButton(),
+                  new SettingsButton(),
+                ],
+        });
+        linkView.addTools(linkToolsView);
+      }
 }
 
 

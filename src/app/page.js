@@ -23,26 +23,35 @@ export default function Home() {
     if (e.key === "entityMenuItem") {
       const rect = new shapes.standard.Rectangle({
         position: { x: 100, y: 100 },
-        size: { width: 100, height: 50 },
+        size: { width: 150, height: 75 },
         attrs: {
           label: {
-            text: "",
+            text: "entity",
           },
         },
       });
       canvasRef.current.addShape(rect);
+      //attach entity type property after adding
+      rect.prop("custom/type", "entity");
     }
     if (e.key === "relationshipMenuItem") {
-      const rhombus = new shapes.basic.Path({
-        size: { width: 100, height: 100 },
+      // const rhombus = new shapes.basic.Path({
+      // text didnt display with basic.path. Likely basic.Path doesnt support text. Changed to standard.polygon instead
+      const rhombus = new shapes.standard.Polygon({
+        size: { width: 150, height: 100 },
         attrs: {
-          path: { d: "M 50 0 L 100 50 L 50 100 L 0 50 Z" },
+          // path: { d: "M 50 0 L 100 50 L 50 100 L 0 50 Z" },
           label: {
-            text: "",
+            text: "relationship",
+          },
+          body: {
+            refPoints: '0,0 1,1 2,0 1,-1',
           },
         },
       });
       canvasRef.current.addShape(rhombus);
+      //attach relationship type property after adding
+      rhombus.prop("custom/type", "relationship");
     }
   };
   return (
