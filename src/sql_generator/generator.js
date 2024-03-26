@@ -16,44 +16,62 @@ const getChildrenHandler = (strHandler, objHandler, arrHandler) => ((children) =
     return undefined;
 })
 
+// Returns an array of entities
+const entityChildrenHandler = (ents) => {
+    let entities = [];
 
-// Entity with only text as children should create an empty table
-const entityStrHandler = (text) => {
-    return `CREATE TABLE ${text} ();`
+    // Entity with only text as children should create an empty table
+    const entityStrHandler = (text) => {
+        entities.push({
+            tableName: text,
+        })
+        return entities;
+    }
+
+    const entityObjHandler = (obj) => {
+        const tableName = obj["#text"];
+        const attributes = obj["attribute"];
+        const cols = attributeChildrenHandler(attributes);
+
+        entities.push({
+            tableName: tableName,
+            columns: cols,
+        })
+        return entities;
+    }
+
+    const entityArrHandler = (arr) => {
+        // Multiple entities
+        let retStr = '';
+
+        arr.forEach((elem, idx) => {
+            entityHelper(elem);
+        });
+        return retStr;
+    }
+
+    const entityHelper = getChildrenHandler(entityStrHandler, entityObjHandler, entityArrHandler);
+
+    entityHelper(ents);
+
+    return entities;
 }
 
-const entityObjHandler = (obj) => {
-    const tableName = obj["#text"];
-    const attributes = obj["attribute"];
-    const { generate } = attributeChildrenHandler(attributes);
-    const attrSql = generate();
 
-    return `CREATE TABLE ${tableName} (\n${attrSql}\n);`;
-}
-
-const entityArrHandler = (arr) => {
-    // Multiple entities
-    let retStr = '';
-
-    arr.forEach((elem, idx) => {
-        retStr += entityChildrenHandler(elem) + (idx != arr.length - 1 ? "\n\n" : "");
-    });
-    return retStr;
-}
-
-// Entity generation
-const entityChildrenHandler = getChildrenHandler(entityStrHandler, entityObjHandler, entityArrHandler);
-
-
+// Returns an array of column
 const attributeChildrenHandler = (attributes) => {
     let cols = [];
-    let primaryKeys = [];
 
     const attributeStrHandler = (text) => {
         // Let VARCHAR(32) be default if type attribute is not given
-        let col = `    ${text} varchar(32)`;
-        cols.push(col);
-        return col;
+        cols.push({
+            colName: text,
+            type: 'varchar(32)',
+            isPrimary: false,
+            isUnique: false,
+            isMandatory: false
+        });
+        return cols;
     }
 
     const attributeObjHandler = (obj) => {
@@ -63,40 +81,63 @@ const attributeChildrenHandler = (attributes) => {
         let isMandatory = obj["@_mandatory"];
         let isUnique = obj["@_unique"];
 
-        if (isPrimary == "true") {
-            primaryKeys.push(colName);
-        }
+        cols.push({
+            colName: colName,
+            type: type,
+            isPrimary: isPrimary === "true",
+            isUnique: isUnique === "true",
+            isMandatory: isMandatory === "true"
+        });
 
-        let col = `    ${colName} ${type}${isUnique === "true" ? " UNIQUE" : ""}${isMandatory === "true" ? " NOT NULL" : ""}`
-        cols.push(col);
-
-        return col;
+        return cols;
     }
 
     // More than one children attribute
     const attributeArrHandler = (arr) => {
         arr.forEach((elem) => {
-            handler(elem);
+            attrHelper(elem);
         });
         return;
     }
 
-    const handler = getChildrenHandler(attributeStrHandler, attributeObjHandler, attributeArrHandler);
+    const attrHelper = getChildrenHandler(attributeStrHandler, attributeObjHandler, attributeArrHandler);
+    attrHelper(attributes);
 
-    const generate = () => {
-        handler(attributes);
-        let colSql = cols.join(",\n")
-        if (primaryKeys.length > 0) {
-            colSql += ",\n" + `    PRIMARY KEY (${primaryKeys.join(", ")})`
-        }
-        return colSql;
-    }
-
-    return {
-        generate
-    }
+    return cols;
 }
 
+// Logic for generating actual SQL from internal representation of ERD
+const generateSql = (erd) => {
+    const entitySql = [];
+    erd.entities.forEach(entity => {
+        let colSqlStr = '';
+        let sqlCols = [];
+
+        // Generate column names if they exist
+        if (entity.columns != undefined) {
+            let primaryKeys = []
+            entity.columns.forEach(col => {
+                if (col.isPrimary) {
+                    primaryKeys.push(col.colName);
+                }
+                sqlCols.push(`    ${col.colName} ${col.type}${col.isUnique ? " UNIQUE" : ""}${col.isMandatory ? " NOT NULL" : ""}`);
+            });
+            if (primaryKeys.length > 0) {
+                sqlCols.push(`    PRIMARY KEY (${primaryKeys.join(", ")})`);
+            }
+        }
+
+        if (sqlCols.length > 0) {
+            colSqlStr = `\n${sqlCols.join(",\n")}\n`;
+        }
+
+        entitySql.push(`CREATE TABLE ${entity.tableName} (${colSqlStr});`);
+    })
+
+    return entitySql.join("\n\n");
+}
+
+// Generate from xml string
 export const generate = (xmlStr) => {
     let parser = new XMLParser({
         ignoreAttributes: false
@@ -106,9 +147,18 @@ export const generate = (xmlStr) => {
     generateFromObject(output);
 }
 
+// Generate from parsed xml object
 export const generateFromObject = (xml) => {
+    // Convert to internal representation of erd
     let xmlEntities = xml["erd"]["entity"];
-    let sql = entityChildrenHandler(xmlEntities);
+    const erd = {
+        entities: entityChildrenHandler(xmlEntities),
+        // Can add relationships here
+    };
+
+    // Convert erd to sql
+    const sql = generateSql(erd);
+
     console.log(sql);
     return sql;
 }
