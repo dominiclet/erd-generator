@@ -1,4 +1,4 @@
-import {elementTools, linkTools, dia} from 'jointjs';
+import {elementTools, linkTools, dia, shapes} from 'jointjs';
 
 const customElementTools = {
     // Function to create and attach element tools
@@ -14,77 +14,28 @@ const customElementTools = {
                             'cursor': 'pointer',
                         }
                     }],
-                    offset: {
-                        x: -20, 
-                        y:-20
-                    },  
+                    offset: {x: -20, y:-20},  
                   }), 
                   new elementTools.Boundary(),
-                  new InfoButton(),
-                  new SettingsButton(),
+                  new AddAttributeButton({offset: {x: 10, y: -20}}),
+                  new SettingsButton({offset: {x: 40, y: -20}}),
                   new elementTools.Connect()
                 ],
         });
         elementView.addTools(elementToolsView);
       },
       // Function to create and attach link tools
-      //
-      // For some reason the buttons are stuck at the top left corner of the graph.
-      // Boundaries seem to stick to the link properly though.
       attachLinkTool: function(linkView){
         var linkToolsView = new dia.ToolsView({
-          tools: [new linkTools.Remove({
-                    markup: [{
-                        tagName: 'circle',
-                        selector: 'button',
-                        attributes:{
-                            'r': 10,
-                            'fill':'#ed0028',
-                            'cursor': 'pointer',
-                        }
-                    }],
-                    // x: 200,
-                    // y: 200,
-                    offset: {
-                        x: 40, 
-                        y: -40
-                    },  
-                  }), 
+          tools: [
+                  // distance attribute determines button distance from the left linked item (ON link-line) 
                   new elementTools.Boundary(),
-                  new InfoButton(),
-                  new SettingsButton(),
+                //   new SettingsButton({distance:150}),
                 ],
         });
         linkView.addTools(linkToolsView);
       }
 }
-
-
-const InfoButton = elementTools.Button.extend ({
-    name: 'info-button',
-    options: {
-        markup: [{
-            tagName: 'circle',
-            selector: 'button',
-            attributes: {
-                'r': 10,
-                'fill': '#001DFF',
-                'cursor': 'pointer'
-            }
-        }],
-        // x: '100%',
-        // y: '100%',
-        offset: {
-            x: 10,
-            y: -20
-        },
-        rotate: true,
-        action: function(evt) {
-            alert('View id: ' + this.id + '\n' + 'Model id: ' + this.model.id);
-        }
-    }
-});
-
 
 const SettingsButton = elementTools.Button.extend ({
     name: 'Settings-button',
@@ -98,17 +49,40 @@ const SettingsButton = elementTools.Button.extend ({
                 'cursor': 'pointer'
             }
         }],
-        // x: '100%',
-        // y: '0%',
-        offset: {
-            x: 40,
-            y: -20
-        },
         rotate: true,
-        action: function(evt) {
+        action: function(evt, elementView, buttonView) {
             alert("Add modal edit window here");
         }
     }
+});
+
+const AddAttributeButton = elementTools.Button.extend ({
+    name: 'AddAttribute-button',
+    options: {
+        markup: [{
+            tagName: 'circle',
+            selector: 'button',
+            attributes: {
+                'r': 10,
+                'fill': '#f2ff00',
+                'cursor': 'pointer'
+            }
+        }],
+        rotate: true,
+        action: function(evt, elementView, buttonView) {
+            const cylinder = new shapes.standard.Cylinder({
+                size: { width: 20, height: 20 },
+                attrs: {
+                  label: {
+                    text: "attribute",
+                  },
+                },
+              });
+              // How do i get the canvas reference from this tool??
+              canvasRef.current.addShape(cylinder);
+              cylinder.prop("custom/type", "attribute");
+        },
+    },
 });
 
 export default customElementTools;

@@ -33,14 +33,11 @@ export default function Home() {
       canvasRef.current.addShape(rect);
       //attach entity type property after adding
       rect.prop("custom/type", "entity");
-    }
+    };
     if (e.key === "relationshipMenuItem") {
-      // const rhombus = new shapes.basic.Path({
-      // text didnt display with basic.path. Likely basic.Path doesnt support text. Changed to standard.polygon instead
       const rhombus = new shapes.standard.Polygon({
         size: { width: 150, height: 100 },
         attrs: {
-          // path: { d: "M 50 0 L 100 50 L 50 100 L 0 50 Z" },
           label: {
             text: "relationship",
           },
@@ -52,7 +49,20 @@ export default function Home() {
       canvasRef.current.addShape(rhombus);
       //attach relationship type property after adding
       rhombus.prop("custom/type", "relationship");
-    }
+    };
+    if (e.key === "attributeMenuItem") {
+      const cylinder = new shapes.standard.Cylinder({
+        size: { width: 20, height: 20 },
+        attrs: {
+          label: {
+            text: "attribute",
+          },
+        },
+      });
+      canvasRef.current.addShape(cylinder);
+      //attach attribute type property after adding
+      cylinder.prop("custom/type", "attribute");
+    };
   };
   return (
     <Layout>
