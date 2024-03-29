@@ -3,8 +3,7 @@ import React, { useRef, useEffect, useState, useContext } from "react";
 import { createPortal } from "react-dom";
 import { GraphContext } from "./GraphContext";
 import { PaperContext } from "./PaperContext";
-import customElementTools from "./tools";
-import * as xmlTriggers from "./xmlTriggers";
+import { getCustomElementTools } from "./tools";
 
 export const PORTAL_READY_EVENT = "portal:ready";
 
@@ -23,6 +22,8 @@ export function Paper({
 
   const [graph] = useContext(GraphContext);
   const [, setPaperContext] = useContext(PaperContext) ?? [];
+
+  const customElementTools = getCustomElementTools(graph);
 
   const [elements, setElements] = useState({});
   const setElement = (model, containerEl) => {
