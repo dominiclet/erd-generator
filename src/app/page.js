@@ -1,23 +1,32 @@
 "use client";
 
-import { useState, createRef } from "react";
+import { useState, createRef, useEffect } from "react";
 import { shapes } from "jointjs";
 import {
   UserOutlined,
   UserAddOutlined,
   CodeSandboxOutlined,
 } from "@ant-design/icons";
-import { Layout, theme, Menu, Button } from "antd";
+import { Layout, theme, Menu, Button, Modal } from "antd";
 
 import JointJSCanvas from "./canvas";
+import { generate } from "@/sql_generator/generator";
 
 const { Header, Sider, Content } = Layout;
+
+const doc = document.implementation.createDocument("", "", null);
+const erd = doc.createElement("erd");
+
 export default function Home() {
   const [collapsed, setCollapsed] = useState(false);
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
   const canvasRef = createRef();
+
+  const [entityCount, setEntityCount] = useState(0);
+  const [sqlModalContent, setSqlModalContent] = useState("");
+  const [sqlModalOpen, setSqlModalOpen] = useState(false);
 
   const onPress = (e) => {
     if (e.key === "entityMenuItem") {
@@ -26,13 +35,20 @@ export default function Home() {
         size: { width: 150, height: 75 },
         attrs: {
           label: {
-            text: "entity",
+            text: `Entity ${entityCount}`,
           },
         },
       });
       canvasRef.current.addShape(rect);
       //attach entity type property after adding
       rect.prop("custom/type", "entity");
+
+      let entity = doc.createElement("entity");
+      entity.innerHTML = `Entity${entityCount}`;
+      erd.appendChild(entity);
+      console.log(new XMLSerializer().serializeToString(erd));
+
+      setEntityCount(entityCount+1);
     };
     if (e.key === "relationshipMenuItem") {
       const rhombus = new shapes.standard.Polygon({
@@ -64,6 +80,14 @@ export default function Home() {
       cylinder.prop("custom/type", "attribute");
     };
   };
+
+  const exportSqlHandler = () => {
+    const erdStr = new XMLSerializer().serializeToString(erd);
+    const sql = generate(erdStr);
+    setSqlModalContent(sql);
+    setSqlModalOpen(true);
+  }
+
   return (
     <Layout>
       <Sider trigger={null}>
@@ -103,6 +127,7 @@ export default function Home() {
               marginLeft: 16,
             }}
             type="primary"
+            onClick={exportSqlHandler}
           >
             Export to SQL
           </Button>
@@ -120,6 +145,15 @@ export default function Home() {
         </Content>
       </Layout>
       <Sider trigger={null} collapsible collapsed={collapsed}></Sider>
+      <Modal 
+        open={sqlModalOpen}
+        onOk={() => setSqlModalOpen(false)}
+        onCancel={() => setSqlModalOpen(false)}
+      >
+        <p style={{whiteSpace: "pre-line"}}>
+          {sqlModalContent && sqlModalContent}
+        </p>
+      </Modal>
     </Layout>
   );
 }

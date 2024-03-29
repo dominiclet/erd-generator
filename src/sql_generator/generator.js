@@ -144,7 +144,7 @@ export const generate = (xmlStr) => {
     });
     let output = parser.parse(xmlStr);
 
-    generateFromObject(output);
+    return generateFromObject(output);
 }
 
 // Generate from parsed xml object
