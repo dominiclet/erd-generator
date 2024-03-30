@@ -16,6 +16,119 @@ const getChildrenHandler = (strHandler, objHandler, arrHandler) => ((children) =
     return undefined;
 })
 
+// Returns an array of relationships
+const relationshipChildrenHandler = (xmlEntities, xmlRelationships) => {
+    let relationships = [];
+
+    const relationshipStrHandler = (text) => {
+        relationships.push({
+            tableName: text,
+        })
+        return relationships;
+    }
+
+    const getForeignAttributes = (xmlEntities, xmlRelationship) => {
+        let linkedEntityNames = xmlRelationship['entity'].map((entity) => {
+            return entity['#text']
+        });
+        console.log(`linkedEntityNames: ${linkedEntityNames}`)
+
+        let foreignPrimaryAttributes = [];
+        for (let xmlEntity of xmlEntities) {
+            if (linkedEntityNames.includes(xmlEntity['#text'])) {
+                for (let attribute of xmlEntity['attribute']) {
+                    if (attribute['@_primary'] == 'true') {
+                        foreignPrimaryAttributes.push(attribute['#text'] + ' ' + attribute['@_type']);
+                    }
+                }
+            }
+        }
+        return foreignPrimaryAttributes;
+    }
+
+    const getPrimaryKey = (xmlEntities, xmlRelationship) => {
+        let linkedEntityNames = xmlRelationship['entity'].map((entity) => {
+            return entity['#text']
+        });
+
+        let foreignPrimaryAttributes = [];
+        for (let xmlEntity of xmlEntities) {
+            if (linkedEntityNames.includes(xmlEntity['#text'])) {
+                for (let attribute of xmlEntity['attribute']) {
+                    if (attribute['@_primary'] == 'true') {
+                        foreignPrimaryAttributes.push(attribute['#text']);
+                    }
+                }
+            }
+        }
+        
+        let primaryKeyString = "PRIMARY KEY (" + foreignPrimaryAttributes.join(',') + ")";
+        return primaryKeyString;
+    }
+
+    const getForeignKeys = (xmlEntities, xmlRelationship) => {
+        let linkedEntityNames = xmlRelationship['entity'].map((entity) => {
+            return entity['#text']
+        });
+
+        let foreignKeysStringsArray = [];
+        for (let xmlEntity of xmlEntities) {
+            let entityStr = "FOREIGN KEY (";
+            let entityPrimaryKey = [];
+            if (linkedEntityNames.includes(xmlEntity['#text'])) {
+                for (let attribute of xmlEntity['attribute']) {
+                    if (attribute['@_primary'] == 'true') {
+                        entityPrimaryKey.push(attribute['#text']);
+                    }
+                }
+            }
+            entityStr += entityPrimaryKey.join(',');
+            entityStr += ") REFERENCES ";
+            entityStr += xmlEntity['#text'];
+            entityStr += "(";
+            entityStr += entityPrimaryKey.join(',');
+            entityStr += ")";
+            foreignKeysStringsArray.push(entityStr);
+        }
+
+        console.log(`foreignKeysStringsArray: ${foreignKeysStringsArray}`);
+        return foreignKeysStringsArray;
+    }
+
+    const relationshipObjHandler = (obj) => {
+        const tableName = obj["#text"];
+        const attributes = obj["attribute"];
+        const foreignAttributes = getForeignAttributes(xmlEntities, obj);
+        const primaryKey = getPrimaryKey(xmlEntities, obj);
+        const foreignKeys = getForeignKeys(xmlEntities, obj);
+
+        relationships.push({
+            tableName: tableName,
+            attributes: attributes,
+            foreignAttributes: foreignAttributes,
+            primaryKey: primaryKey,
+            foreignKeys: foreignKeys,
+        })
+        return relationships;
+    }
+
+    const relationshipArrHandler = (arr) => {
+        // Multiple entities
+        let retStr = '';
+
+        arr.forEach((elem, idx) => {
+            entityHelper(elem);
+        });
+        return retStr;
+    }
+
+
+    const relationshipHelper = getChildrenHandler(relationshipStrHandler, relationshipObjHandler, relationshipArrHandler);
+    relationshipHelper(xmlRelationships);
+
+    return relationships;
+}
+
 // Returns an array of entities
 const entityChildrenHandler = (ents) => {
     let entities = [];
@@ -134,6 +247,36 @@ const generateSql = (erd) => {
         entitySql.push(`CREATE TABLE ${entity.tableName} (${colSqlStr});`);
     })
 
+    erd.relationships.forEach(relationship => {
+        let colSqlStr = '';
+        let sqlCols = [];
+        
+        // Add own attribute of relationship
+        for (let attribute of relationship.attributes) {
+            sqlCols.push(`  ${attribute['#text']} ${attribute['@_type']} NOT NULL`)
+        }
+
+        // Add primary key of linked attributes
+        for (let foreignAttribute of relationship.foreignAttributes) {
+            sqlCols.push(`  ${foreignAttribute}`);
+        }
+
+        // Add in primary key
+        sqlCols.push(`  ${relationship.primaryKey}`);
+
+        // Add in foreign keys
+        for (let foreignKey of relationship.foreignKeys) {
+            sqlCols.push(`  ${foreignKey}`);
+        }
+
+        // Join sqlCols into colSqlStr
+        if (sqlCols.length > 0) {
+            colSqlStr = `\n${sqlCols.join(",\n")}\n`;
+        }
+
+        entitySql.push(`CREATE TABLE ${relationship.tableName} (${colSqlStr})`);
+    })
+
     return entitySql.join("\n\n");
 }
 
@@ -151,10 +294,16 @@ export const generate = (xmlStr) => {
 export const generateFromObject = (xml) => {
     // Convert to internal representation of erd
     let xmlEntities = xml["erd"]["entity"];
+    let xmlRelationships = xml["erd"]["relationship"];
+    console.log(xmlEntities);
+    console.log(xmlRelationships);
+    
     const erd = {
         entities: entityChildrenHandler(xmlEntities),
         // Can add relationships here
+        relationships: relationshipChildrenHandler(xmlEntities, xmlRelationships),
     };
+    console.log(erd);
 
     // Convert erd to sql
     const sql = generateSql(erd);

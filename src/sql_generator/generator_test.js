@@ -23,3 +23,33 @@ const entityTest = '\
     </erd>';
 
 generate(entityTest);
+
+
+const relationshipTest = '\
+    <erd>\
+        <entity>\
+            person\
+            <attribute type="varchar(31)" primary="true">first_name</attribute>\
+            <attribute type="varchar(31)" primary="true">last_name</attribute>\
+            <attribute type="varchar(255)">address</attribute>\
+        </entity>\
+        <entity>\
+            company\
+            <attribute type="varchar(31)" primary="true">name</attribute>\
+            <attribute type="varchar(255)">address</attribute>\
+        </entity>\
+        <relationship>\
+            contract\
+            <entity min-cardinality="0" max-cardinality="n">\
+                person\
+            </entity>\
+            <entity min-cardinality="0" max-cardinality="n">\
+                company\
+            </entity>\
+            <attribute type="date">start</attribute>\
+            <attribute type="date">end</attribute>\
+            <attribute type="varchar(255)">object</attribute>\
+        </relationship>\
+    </erd>';
+
+generate(relationshipTest);
