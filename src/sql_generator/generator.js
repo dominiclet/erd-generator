@@ -31,14 +31,24 @@ const relationshipChildrenHandler = (xmlEntities, xmlRelationships) => {
         let linkedEntityNames = xmlRelationship['entity'].map((entity) => {
             return entity['#text']
         });
-        console.log(`linkedEntityNames: ${linkedEntityNames}`)
 
         let foreignPrimaryAttributes = [];
         for (let xmlEntity of xmlEntities) {
+            let relationshipEntity = null;
+            for (let entity of xmlRelationship['entity']) {
+                if (entity['#text'] === xmlEntity['#text']) {
+                    relationshipEntity = entity
+                }
+            }
             if (linkedEntityNames.includes(xmlEntity['#text'])) {
                 for (let attribute of xmlEntity['attribute']) {
                     if (attribute['@_primary'] == 'true') {
-                        foreignPrimaryAttributes.push(attribute['#text'] + ' ' + attribute['@_type']);
+                        if (relationshipEntity['@_min-cardinality'] == '0' && relationshipEntity['@_max-cardinality'] == '1') {
+                            foreignPrimaryAttributes.push(attribute['#text'] + ' ' + attribute['@_type'] + ' UNIQUE');
+                        } else{
+                            foreignPrimaryAttributes.push(attribute['#text'] + ' ' + attribute['@_type']);
+                        }
+                        
                     }
                 }
             }

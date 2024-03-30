@@ -53,3 +53,31 @@ const relationshipTest = '\
     </erd>';
 
 generate(relationshipTest);
+
+
+const relationshipTestOneToMany = '\
+    <erd>\
+        <entity>\
+            employee\
+            <attribute type="varchar(31)">name</attribute>\
+            <attribute type="varchar(31)" primary="true">number</attribute>\
+        </entity>\
+        <entity>\
+            company\
+            <attribute type="varchar(31)" primary="true">name</attribute>\
+            <attribute type="varchar(255)">address</attribute>\
+        </entity>\
+        <relationship>\
+            work_for\
+            <entity min-cardinality="0" max-cardinality="1">\
+                employee\
+            </entity>\
+            <entity min-cardinality="0" max-cardinality="n">\
+                company\
+            </entity>\
+            <attribute type="date">start</attribute>\
+            <attribute type="date">end</attribute>\
+        </relationship>\
+    </erd>';
+
+generate(relationshipTestOneToMany);
