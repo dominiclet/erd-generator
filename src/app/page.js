@@ -65,6 +65,13 @@ export default function Home() {
       canvasRef.current.addShape(rhombus);
       //attach relationship type property after adding
       rhombus.prop("custom/type", "relationship");
+
+      let entity = doc.createElement("entity");
+      entity.innerHTML = `Entity${entityCount}`;
+      erd.appendChild(entity);
+      console.log(new XMLSerializer().serializeToString(erd));
+
+      setEntityCount(entityCount+1);
     };
     if (e.key === "attributeMenuItem") {
       const cylinder = new shapes.standard.Cylinder({
@@ -110,7 +117,7 @@ export default function Home() {
             {
               key: "attributeMenuItem",
               icon: <UserAddOutlined />,
-              label: "Create attribute",
+              label: "Create Attribute",
             },
           ]}
         />

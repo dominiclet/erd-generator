@@ -114,20 +114,19 @@ export function Paper({
     });
 
     // Graph event listener - triggers on additions to Paper
-    graph.on("add", (cell) => {
-      // if(cell.model.prop("custom/type") == "entity"){
-      //   console.log("test");
-      // }
-    });
+    graph.on('add', function(cell) {
+      // Removes arrowheads from links
+      if (cell instanceof dia.Link) {
+          cell.attr('.marker-arrowhead-group', { display: 'none' });
+        }
+  });
 
     // Graph even listener - triggers on link connection
-    graph.on("change:source change:target", function(link){
-      if ( link.get('source').id && link.get('target').id ){
-        console.log('Link connected');
-
-        console.log('source: ', link.source);
-        console.log('target: ', link.target);
-      }
+    graph.on("add:link", function(link){
+      // console.log('LINKADD');
+      // if ( link.get('source').id && link.get('target').id ){
+      //   link.hideTools();
+      // }
     });
     
     // Add a click event listener to the Paper component
