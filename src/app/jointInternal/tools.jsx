@@ -102,6 +102,8 @@ const getAddAttrBtnConstructor = (graph) => {
               entityElement.appendChild(attribute);
               const cylinder = new shapes.standard.Cylinder({
                   size: { width: 20, height: 20 },
+                  position: { x: this.model.position().x + 100, 
+                              y: this.model.position().y + 200 },
                   attrs: {
                     label: {
                       text: attrId,
@@ -110,16 +112,9 @@ const getAddAttrBtnConstructor = (graph) => {
                 });
                 graph.addCell(cylinder);
                 cylinder.prop("custom/type", "attribute");
-                
-                const link = new shapes.standard.Link({
+                const link = new dia.Link({
                   source: {id: this.model.id},
                   target: {id: cylinder.id},
-                  attrs:{
-                    line: {
-                      sourceMarker: null,
-                      targetMarker: null,
-                    },
-                  },
                 });
                 graph.addCell(link);
           },
