@@ -75,6 +75,7 @@ const getAddAttrBtnConstructor = (graph) => {
           }],
           rotate: true,
           action: function(evt, elementView, buttonView) {
+              
               const cylinder = new shapes.standard.Cylinder({
                   size: { width: 20, height: 20 },
                   attrs: {
@@ -83,9 +84,20 @@ const getAddAttrBtnConstructor = (graph) => {
                     },
                   },
                 });
-                // How do i get the canvas reference from this tool??
                 graph.addCell(cylinder);
                 cylinder.prop("custom/type", "attribute");
+                
+                const link = new shapes.standard.Link({
+                  source: {id: this.model.id},
+                  target: {id: cylinder.id},
+                  attrs:{
+                    line: {
+                      sourceMarker: null,
+                      targetMarker: null,
+                    },
+                  },
+                });
+                graph.addCell(link);
           },
       },
   });
