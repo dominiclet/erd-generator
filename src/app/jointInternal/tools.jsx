@@ -1,4 +1,5 @@
 import {elementTools, linkTools, dia, shapes} from 'jointjs';
+import { doc, erd } from '../page';
 
 export const getCustomElementTools = (graph) => {
   const AddAttrBtn = getAddAttrBtnConstructor(graph);
@@ -75,12 +76,35 @@ const getAddAttrBtnConstructor = (graph) => {
           }],
           rotate: true,
           action: function(evt, elementView, buttonView) {
-              
+              if (this.model.attributes.type == "standard.Cylinder") {
+                // Handle pressing button for attribute (makes it primary key)
+                let attrId = this.model.attributes.attrs.label.text;
+                let attrElement = erd.getElementsByClassName(attrId)[0];
+                let isPrimary = attrElement.getAttribute("primary");
+                console.log(this.model)
+                if (isPrimary != null && isPrimary == "true") {
+                  attrElement.setAttribute("primary", "false");
+                  this.model.attr({label: {fill: 'black'}});
+                } else {
+                  attrElement.setAttribute("primary", "true");
+                  this.model.attr({label: {fill: 'red'}});
+                }
+                return;
+              }
+              let entityId = this.model.attributes.attrs.label.text;
+              let entityNo = entityId.split("_")[1];
+              let entityElement = erd.getElementsByClassName(entityId)[0];
+              let attribute = doc.createElement("attribute");
+              let attrId = `Attribute_${entityNo}_${entityElement.children.length}`;
+              attribute.className = attrId;
+              attribute.innerHTML = attrId;
+              attribute.id = attrId;
+              entityElement.appendChild(attribute);
               const cylinder = new shapes.standard.Cylinder({
                   size: { width: 20, height: 20 },
                   attrs: {
                     label: {
-                      text: "attribute",
+                      text: attrId,
                     },
                   },
                 });
