@@ -14,8 +14,8 @@ import { generate } from "@/sql_generator/generator";
 
 const { Header, Sider, Content } = Layout;
 
-const doc = document.implementation.createDocument("", "", null);
-const erd = doc.createElement("erd");
+export const doc = document.implementation.createDocument("", "", null);
+export const erd = doc.createElement("erd");
 
 export default function Home() {
   const [collapsed, setCollapsed] = useState(false);
@@ -35,7 +35,7 @@ export default function Home() {
         size: { width: 150, height: 75 },
         attrs: {
           label: {
-            text: `Entity ${entityCount}`,
+            text: `Entity_${entityCount}`,
           },
         },
       });
@@ -44,7 +44,9 @@ export default function Home() {
       rect.prop("custom/type", "entity");
 
       let entity = doc.createElement("entity");
-      entity.innerHTML = `Entity${entityCount}`;
+      entity.className = `Entity_${entityCount}`;
+      entity.id = `Entity_${entityCount}`;
+      entity.innerHTML = `Entity_${entityCount}`;
       erd.appendChild(entity);
       console.log(new XMLSerializer().serializeToString(erd));
 
@@ -65,6 +67,13 @@ export default function Home() {
       canvasRef.current.addShape(rhombus);
       //attach relationship type property after adding
       rhombus.prop("custom/type", "relationship");
+
+      let entity = doc.createElement("entity");
+      entity.innerHTML = `Entity${entityCount}`;
+      erd.appendChild(entity);
+      console.log(new XMLSerializer().serializeToString(erd));
+
+      setEntityCount(entityCount+1);
     };
     if (e.key === "attributeMenuItem") {
       const cylinder = new shapes.standard.Cylinder({
@@ -110,7 +119,7 @@ export default function Home() {
             {
               key: "attributeMenuItem",
               icon: <UserAddOutlined />,
-              label: "Create attribute",
+              label: "Create Attribute",
             },
           ]}
         />
@@ -150,7 +159,7 @@ export default function Home() {
         onOk={() => setSqlModalOpen(false)}
         onCancel={() => setSqlModalOpen(false)}
       >
-        <p style={{whiteSpace: "pre-line"}}>
+        <p style={{whiteSpace: "pre"}}>
           {sqlModalContent && sqlModalContent}
         </p>
       </Modal>
