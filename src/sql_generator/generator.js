@@ -43,7 +43,7 @@ const relationshipChildrenHandler = (xmlEntities, xmlRelationships) => {
             if (linkedEntityNames.includes(xmlEntity['#text'])) {
                 for (let attribute of xmlEntity['attribute']) {
                     if (attribute['@_primary'] == 'true') {
-                        if (relationshipEntity['@_min-cardinality'] == '0' && relationshipEntity['@_max-cardinality'] == '1') {
+                        if (relationshipEntity['@_max-cardinality'] == '1') {
                             foreignPrimaryAttributes.push(attribute['#text'] + ' ' + attribute['@_type'] + ' UNIQUE');
                         } else{
                             foreignPrimaryAttributes.push(attribute['#text'] + ' ' + attribute['@_type']);
@@ -83,22 +83,24 @@ const relationshipChildrenHandler = (xmlEntities, xmlRelationships) => {
 
         let foreignKeysStringsArray = [];
         for (let xmlEntity of xmlEntities) {
-            let entityStr = "FOREIGN KEY (";
-            let entityPrimaryKey = [];
             if (linkedEntityNames.includes(xmlEntity['#text'])) {
+                let entityStr = "FOREIGN KEY (";
+                let entityPrimaryKey = [];
+
                 for (let attribute of xmlEntity['attribute']) {
                     if (attribute['@_primary'] == 'true') {
                         entityPrimaryKey.push(attribute['#text']);
                     }
                 }
+                
+                entityStr += entityPrimaryKey.join(',');
+                entityStr += ") REFERENCES ";
+                entityStr += xmlEntity['#text'];
+                entityStr += "(";
+                entityStr += entityPrimaryKey.join(',');
+                entityStr += ")";
+                foreignKeysStringsArray.push(entityStr);
             }
-            entityStr += entityPrimaryKey.join(',');
-            entityStr += ") REFERENCES ";
-            entityStr += xmlEntity['#text'];
-            entityStr += "(";
-            entityStr += entityPrimaryKey.join(',');
-            entityStr += ")";
-            foreignKeysStringsArray.push(entityStr);
         }
 
         console.log(`foreignKeysStringsArray: ${foreignKeysStringsArray}`);
@@ -127,7 +129,7 @@ const relationshipChildrenHandler = (xmlEntities, xmlRelationships) => {
         let retStr = '';
 
         arr.forEach((elem, idx) => {
-            entityHelper(elem);
+            relationshipHelper(elem);
         });
         return retStr;
     }
@@ -261,15 +263,21 @@ const generateSql = (erd) => {
         let colSqlStr = '';
         let sqlCols = [];
         
-        // Add own attribute of relationship
-        for (let attribute of relationship.attributes) {
-            sqlCols.push(`  ${attribute['#text']} ${attribute['@_type']} NOT NULL`)
+        // Add own attribute of relationship if they exist
+        if (relationship.attributes != undefined) {
+            for (let attribute of relationship.attributes) {
+                sqlCols.push(`  ${attribute['#text']} ${attribute['@_type']} NOT NULL`)
+            }
         }
 
-        // Add primary key of linked attributes
-        for (let foreignAttribute of relationship.foreignAttributes) {
-            sqlCols.push(`  ${foreignAttribute}`);
+
+        // Add primary key of linked attributes if they exist
+        if (relationship.foreignAttributes != undefined) {
+            for (let foreignAttribute of relationship.foreignAttributes) {
+                sqlCols.push(`  ${foreignAttribute}`);
+            }
         }
+
 
         // Add in primary key
         sqlCols.push(`  ${relationship.primaryKey}`);

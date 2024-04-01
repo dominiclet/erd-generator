@@ -81,3 +81,63 @@ const relationshipTestOneToMany = '\
     </erd>';
 
 generate(relationshipTestOneToMany);
+
+
+const facultyInformation = "\
+    <erd>\
+        <entity>\
+            Faculty_Information\
+            <attribute type='bigint' primary='true'>id</attribute>\
+            <attribute type='varchar(255)'>Name</attribute>\
+            <attribute type='varchar(255)'>Department</attribute>\
+            <attribute type='varchar(255)'>School</attribute>\
+            <attribute type='varchar(31)'>Telephone_Number</attribute>\
+        </entity>\
+        <entity>\
+            Common_User\
+            <attribute type='bigint' primary='true'>id</attribute>\
+            <attribute type='varchar(255)'>User_Name</attribute>\
+            <attribute type='varchar(255)'>Password</attribute>\
+        </entity>\
+        <entity>\
+            Teacher_User\
+            <attribute type='bigint' primary='true'>id</attribute>\
+            <attribute type='varchar(255)'>User_Name</attribute>\
+            <attribute type='varchar(255)'>Password</attribute>\
+        </entity>\
+        <entity>\
+            Administrator\
+            <attribute type='bigint' primary='true'>id</attribute>\
+            <attribute type='varchar(255)'>User_Name</attribute>\
+            <attribute type='varchar(255)'>Password</attribute>\
+        </entity>\
+        <relationship>\
+            Inquiry\
+            <entity max-cardinality='1'>\
+                Common_User\
+            </entity>\
+            <entity max-cardinality='N'>\
+                Faculty_Information\
+            </entity>\
+        </relationship>\
+        <relationship>\
+            Modify\
+            <entity max-cardinality='1'>\
+                Teacher_User\
+            </entity>\
+            <entity max-cardinality='N'>\
+                Faculty_Information\
+            </entity>\
+        </relationship>\
+        <relationship>\
+            Service\
+            <entity max-cardinality='1'>\
+                Administrator\
+            </entity>\
+            <entity>\
+                Faculty_Information\
+            </entity>\
+        </relationship>\
+    </erd>";
+
+    generate(facultyInformation);
