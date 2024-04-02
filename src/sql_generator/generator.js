@@ -301,7 +301,8 @@ const generateSql = (erd) => {
 // Generate from xml string
 export const generate = (xmlStr) => {
     let parser = new XMLParser({
-        ignoreAttributes: false
+        ignoreAttributes: false,
+        alwaysCreateTextNode: true,
     });
     let output = parser.parse(xmlStr);
 

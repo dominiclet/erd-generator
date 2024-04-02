@@ -141,3 +141,130 @@ const facultyInformation = "\
     </erd>";
 
     generate(facultyInformation);
+
+
+    const hospitalSystem = "\
+        <erd>\
+            <entity>\
+                Hospital\
+                <attribute type='bigint' primary='true'>HID</attribute>\
+                <attribute type='varchar(255)'>HNAME</attribute>\
+                <attribute type='varchar(255)'>HLOCATION</attribute>\
+                <attribute type='bigint'>HNUMBER</attribute>\
+            </entity>\
+            <entity>\
+                Doctor\
+                <attribute type='bigint' primary='true'>DID</attribute>\
+                <attribute type='bigint'>HID</attribute>\
+                <attribute type='varchar(255)'>DNAME</attribute>\
+                <attribute type='varchar(255)'>SPECIALIZATION</attribute>\
+                <attribute type='varchar(31)'>DSEX</attribute>\
+            </entity>\
+            <entity>\
+                Patient\
+                <attribute type='bigint' primary='true'>PID</attribute>\
+                <attribute type='bigint'>DID</attribute>\
+                <attribute type='varchar(255)'>PNAME</attribute>\
+                <attribute type='varchar(255)'>PADDRESS</attribute>\
+                <attribute type='varchar(31)'>PSEX</attribute>\
+            </entity>\
+            <entity>\
+                Medicine name\
+                <attribute type='bigint' primary='true'>CODE</attribute>\
+                <attribute type='bigint'>PID</attribute>\
+                <attribute type='bigint'>DID</attribute>\
+                <attribute type='money'>PRICE</attribute>\
+                <attribute type='integer'>QUANTITY</attribute>\
+            </entity>\
+            <entity>\
+                Nurse\
+                <attribute type='bigint' primary='true'>NID</attribute>\
+                <attribute type='bigint'>HID</attribute>\
+                <attribute type='varchar(255)'>NNAME</attribute>\
+                <attribute type='varchar(255)'>NADDRESS</attribute>\
+                <attribute type='varchar(31)'>SEX</attribute>\
+            </entity>\
+            <entity>\
+                Rooms\
+                <attribute type='bigint' primary='true'>RID</attribute>\
+                <attribute type='bigint'>PID</attribute>\
+                <attribute type='bigint'>NID</attribute>\
+                <attribute type='varchar(31)'>RTYPE</attribute>\
+            </entity>\
+            <entity>\
+                Record\
+                <attribute type='bigint' primary='true'>PID</attribute>\
+                <attribute type='bigint' primary='true'>DID</attribute>\
+                <attribute type='timestamp' primary='true'>APPOINTMENT</attribute>\
+            </entity>\
+            <entity>\
+                Receptionist\
+                <attribute type='bigint' primary='true'>RE_ID</attribute>\
+                <attribute type='bigint' primary='true'>HID</attribute>\
+                <attribute type='varchar(255)'>RE_NAME</attribute>\
+                <attribute type='varchar(255)'>RE_ADDRESS</attribute>\
+            </entity>\
+            <relationship>\
+                Treats\
+                <entity max-cardinality='1'>\
+                    Patient\
+                </entity>\
+                <entity max-cardinality='N'>\
+                    Doctor\
+                </entity>\
+            </relationship>\
+            <relationship>\
+                Bill\
+                <entity>\
+                    Medicine Name\
+                </entity>\
+                <entity max-cardinality='N'>\
+                    Patient\
+                </entity>\
+            </relationship>\
+            <relationship>\
+                Assigned\
+                <entity>\
+                    Patient\
+                </entity>\
+                <entity>\
+                    Rooms\
+                </entity>\
+            </relationship>\
+            <relationship>\
+                Governs\
+                <entity max-cardinality='N'>\
+                    Nurse\
+                </entity>\
+                <entity max-cardinality='1'>\
+                    Rooms\
+                </entity>\
+            </relationship>\
+            <relationship>\
+                Has\
+                <entity max-cardinality='M'>\
+                    Hospital\
+                </entity>\
+                <entity max-cardinality='M'>\
+                    Doctor\
+                </entity>\
+                <entity max-cardinality='M'>\
+                    Nurse\
+                </entity>\
+                <entity max-cardinality='M'>\
+                    Receptionist\
+                </entity>\
+            </relationship>\
+            <relationship>\
+                Maintain\
+                <entity max-cardinality='N'>\
+                    Receptionist\
+                </entity>\
+                <entity max-cardinality='1'>\
+                    Record\
+                </entity>\
+            </relationship>\
+        </erd>\
+    ";
+
+    generate(hospitalSystem);
