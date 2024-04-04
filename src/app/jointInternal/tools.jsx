@@ -2,31 +2,38 @@ import {elementTools, linkTools, dia, shapes} from 'jointjs';
 import { doc, erd } from '../page';
 
 export const getCustomElementTools = (graph) => {
-  const AddAttrBtn = getAddAttrBtnConstructor(graph);
+  const AddAttrButton = getAddAttrBtnConstructor(graph);
   const customElementTools = {
       // Function to create and attach element tools
       attachElementTool: function(elementView){
-          var elementToolsView = new dia.ToolsView({
-            tools: [new elementTools.Remove({
-                      markup: [{
-                          tagName: 'circle',
-                          selector: 'button',
-                          attributes:{
-                              'r': 10,
-                              'fill':'#ed0028',
-                              'cursor': 'pointer',
-                          }
-                      }],
-                      offset: {x: -20, y:-20},  
-                    }), 
-                    new elementTools.Boundary(),
-                    new AddAttrBtn({offset: {x: 10, y: -20}}),
-                    new SettingsButton({offset: {x: 40, y: -20}}),
-                    new elementTools.Connect()
-                  ],
-          });
-          elementView.addTools(elementToolsView);
-        },
+          var toolsList = [
+            new elementTools.Boundary(),
+            new elementTools.Connect(),
+            new elementTools.Remove({
+            markup: [{
+                tagName: 'circle',
+                selector: 'button',
+                attributes:{
+                    'r': 10,
+                    'fill':'#ed0028',
+                    'cursor': 'pointer',
+                }
+            }],
+            offset: {x: -20, y:-20},  
+          }), 
+          // new SettingsButton({offset: {x: 40, y: -20}}),
+        ];
+
+        if(elementView.model.prop("custom/type") == "entity"){
+          toolsList.push(new AddAttrButton({offset: {x: 10, y: -20}}));
+        };
+        if(elementView.model.prop("custom/type") == "attribute"){
+          toolsList.push(new TogglePrimaryButton({offset: {x: 10, y: -20}}));
+        };
+        elementView.addTools(new dia.ToolsView({
+          tools: toolsList,
+        }));
+      },
         // Function to create and attach link tools
         attachLinkTool: function(linkView){
           var linkToolsView = new dia.ToolsView({
@@ -76,26 +83,11 @@ const getAddAttrBtnConstructor = (graph) => {
           }],
           rotate: true,
           action: function(evt, elementView, buttonView) {
-              if (this.model.attributes.type == "standard.Cylinder") {
-                // Handle pressing button for attribute (makes it primary key)
-                let attrId = this.model.attributes.attrs.label.text;
-                let attrElement = erd.getElementsByClassName(attrId)[0];
-                let isPrimary = attrElement.getAttribute("primary");
-                console.log(this.model)
-                if (isPrimary != null && isPrimary == "true") {
-                  attrElement.setAttribute("primary", "false");
-                  this.model.attr({label: {fill: 'black'}});
-                } else {
-                  attrElement.setAttribute("primary", "true");
-                  this.model.attr({label: {fill: 'red'}});
-                }
-                return;
-              }
               let entityId = this.model.attributes.attrs.label.text;
               let entityNo = entityId.split("_")[1];
               let entityElement = erd.getElementsByClassName(entityId)[0];
               let attribute = doc.createElement("attribute");
-              let attrId = `Attribute_${entityNo}_${entityElement.children.length}`;
+              let attrId = `Attribute_${entityNo}_${entityElement.children.length}`; 
               attribute.className = attrId;
               attribute.innerHTML = attrId;
               attribute.id = attrId;
@@ -123,4 +115,34 @@ const getAddAttrBtnConstructor = (graph) => {
   return AddAttributeButton;
 }
 
+const TogglePrimaryButton = elementTools.Button.extend ({
+  name: 'TogglePrimary-button',
+  options: {
+      markup: [{
+          tagName: 'circle',
+          selector: 'button',
+          attributes: {
+              'r': 10,
+              'fill': '#e100ff',
+              'cursor': 'pointer'
+          }
+      }],
+      rotate: true,
+      action: function(evt, elementView, buttonView) {
+        // Handle pressing button for attribute (makes it primary key)
+        let attrId = this.model.attributes.attrs.label.text;
+        let attrElement = erd.getElementsByClassName(attrId)[0];
+        let isPrimary = attrElement.getAttribute("primary");
+        console.log(this.model)
+        if (isPrimary != null && isPrimary == "true") {
+          attrElement.setAttribute("primary", "false");
+          this.model.attr({label: {fill: 'black'}});
+        } else {
+          attrElement.setAttribute("primary", "true");
+          this.model.attr({label: {fill: 'red'}});
+        }
+        return;
+      }
+  }
+});
 
